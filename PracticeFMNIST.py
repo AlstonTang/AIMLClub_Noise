@@ -128,7 +128,7 @@ def main():
         stateDict = torch.load('fmnist_cnn.pt', weights_only=True)
         model = Net().to(device)
         model.load_state_dict(stateDict)
-        dataset2 = datasets.MNIST('./data', train=False, transform=noiseutils.getIdentityTransform()) # Again, change directory as needed.
+        dataset2 = datasets.FashionMNIST('./fmnist', train=False, transform=noiseutils.getIdentityTransform()) # Again, change directory as needed.
         test_loader = torch.utils.data.DataLoader(dataset2)
         test(model, device, test_loader)
         return

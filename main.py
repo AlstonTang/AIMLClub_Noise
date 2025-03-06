@@ -137,24 +137,28 @@ def main():
         dataset2 = datasets.MNIST('./data', train=False, transform=noiseutils.getIdentityTransform()) # Again, change directory as needed.
         test_loader = torch.utils.data.DataLoader(dataset2)
         test(model, device, test_loader)
+        return
 
     #transform=transforms.Compose([
     #    transforms.ToTensor(),
     #    transforms.Normalize((0.1307,), (0.3081,))
     #    ])
 
-    transform = noiseutils.getTransform()
+    transform = noiseutils.getTransform(0.5)
     default = noiseutils.getIdentityTransform()
 
     dataset1 = datasets.MNIST('./data', train=True, download=False, # If you haven't ran the code once yet set download to true, also change directory to where data is located.
                        transform=transform)
     dataset2 = datasets.MNIST('./data', train=False,
                        transform=default)
+    
+    noiseutils.previewMNIST(dataset1)
+
     train_loader = torch.utils.data.DataLoader(dataset1,**train_kwargs)
     test_loader = torch.utils.data.DataLoader(dataset2, **test_kwargs)
 
     model = Net().to(device)
-    optimizer = optim.Adadelta(model.parameters(), lr=args.lr)
+    optimizer = optim.Adadelta(model.parameters(), lr=args.lr, weight_decay=0.001)
 
     scheduler = StepLR(optimizer, step_size=1, gamma=args.gamma)
     for epoch in range(1, args.epochs + 1):

@@ -139,7 +139,7 @@ def main():
     #    ])
 
     transform = noiseutils.getIdentityTransform()
-    default = noiseutils.getTransform(0.05)
+    default = noiseutils.getFMNISTPracticeTransformValidation(0.25)
 
     dataset1 = datasets.FashionMNIST('./fmnist', train=True, download=False, # If you haven't ran the code once yet set download to true, also change directory to where data is located.
                        transform=transform)

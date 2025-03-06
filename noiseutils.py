@@ -63,6 +63,18 @@ def getTransform(probability=0.1, isColor=False):
             AddGaussianNoise(probability=probability), # salt and pepper
             #GaussianBlurProbability(3, probability)
         ])
+    
+def getFMNISTPracticeTransformValidation(probability=0.1):
+    return transforms.Compose([
+        transforms.ToTensor(), # 1, 2, 3 -> torch.tensor([1.0, 2.0, 3.0])
+        transforms.RandomVerticalFlip(probability),
+        transforms.RandomHorizontalFlip(probability),
+        transforms.RandomPerspective(distortion_scale=0.5, p=probability),
+        transforms.RandomInvert(probability),
+        RotationProbability(45, probability),
+        AddGaussianNoise(0, 0.25, probability), # salt and pepper
+        GaussianBlurProbability(5, probability)
+    ])
 
 def getIdentityTransform():
     return transforms.Compose([

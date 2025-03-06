@@ -1,9 +1,3 @@
-"""
-Taken from the PyTorch tutorial on training neural network on CIFAR
-
-Modified for use in AI/ML Club Countering Noise Workshop
-"""
-
 import argparse
 import torch
 import torch.nn as nn
@@ -16,13 +10,12 @@ from torch.optim.lr_scheduler import StepLR
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        self.conv1 = nn.Conv2d(3, 16, 5, 1)
-        self.conv2 = nn.Conv2d(16, 24, 5, 1)
-        self.conv3 = nn.Conv2d(24, 48, 5, 1)
+        self.conv1 = nn.Conv2d(1, 32, 3, 1)
+        self.conv2 = nn.Conv2d(32, 64, 3, 1)
         self.dropout1 = nn.Dropout(0.25)
         self.dropout2 = nn.Dropout(0.5)
-        self.fc1 = nn.Linear(8*8*48, 192)
-        self.fc2 = nn.Linear(192, 10)
+        self.fc1 = nn.Linear(9216, 128)
+        self.fc2 = nn.Linear(128, 10)
 
     def forward(self, x):
         x = self.conv1(x)
@@ -31,8 +24,6 @@ class Net(nn.Module):
         x = F.relu(x)
         x = F.max_pool2d(x, 2)
         x = self.dropout1(x)
-        x = self.conv3(x)
-        x = F.relu(x)
         x = torch.flatten(x, 1)
         x = self.fc1(x)
         x = F.relu(x)
@@ -134,10 +125,10 @@ def main():
         test_kwargs.update(cuda_kwargs)
 
     if args.test_saved_model:
-        stateDict = torch.load('cifar.pt', weights_only=True)
+        stateDict = torch.load('fmnist_cnn.pt', weights_only=True)
         model = Net().to(device)
         model.load_state_dict(stateDict)
-        dataset2 = datasets.CIFAR10('./CIFAR', train=False, transform=noiseutils.getIdentityTransform()) # Again, change directory as needed.
+        dataset2 = datasets.MNIST('./data', train=False, transform=noiseutils.getIdentityTransform()) # Again, change directory as needed.
         test_loader = torch.utils.data.DataLoader(dataset2)
         test(model, device, test_loader)
         return
@@ -147,21 +138,21 @@ def main():
     #    transforms.Normalize((0.1307,), (0.3081,))
     #    ])
 
-    transform = noiseutils.getTransform(0.05, True)
-    default = noiseutils.getIdentityTransform()
+    transform = noiseutils.getIdentityTransform()
+    default = noiseutils.getTransform(0.05)
 
-    dataset1 = datasets.CIFAR10('./CIFAR', train=True, download=False, # If you haven't ran the code once yet set download to true, also change directory to where data is located.
+    dataset1 = datasets.FashionMNIST('./fmnist', train=True, download=False, # If you haven't ran the code once yet set download to true, also change directory to where data is located.
                        transform=transform)
-    dataset2 = datasets.CIFAR10('./CIFAR', train=False,
+    dataset2 = datasets.FashionMNIST('./fmnist', train=False,
                        transform=default)
     
-    noiseutils.previewCIFAR(dataset1)
+    noiseutils.previewMNIST(dataset2) # FMNIST should just be MNIST
 
     train_loader = torch.utils.data.DataLoader(dataset1,**train_kwargs)
     test_loader = torch.utils.data.DataLoader(dataset2, **test_kwargs)
 
     model = Net().to(device)
-    optimizer = optim.Adadelta(model.parameters(), lr=args.lr, weight_decay=0.001)
+    optimizer = optim.Adadelta(model.parameters(), lr=args.lr)
 
     scheduler = StepLR(optimizer, step_size=1, gamma=args.gamma)
     for epoch in range(1, args.epochs + 1):
@@ -170,7 +161,7 @@ def main():
         scheduler.step()
 
     if args.save_model:
-        torch.save(model.state_dict(), "cifar.pt")
+        torch.save(model.state_dict(), "fmnist_cnn.pt")
 
 if __name__ == '__main__':
     main()
